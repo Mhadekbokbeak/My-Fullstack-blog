@@ -1,0 +1,1 @@
+# This project I made it for my education in the futures so i do used AI Gemini for help me all and after that i will learn from that so This is the first full stack project with mongoDB on cloud for free

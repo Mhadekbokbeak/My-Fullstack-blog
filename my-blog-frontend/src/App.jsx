@@ -2,7 +2,10 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { BrowserRouter as Router, Routes, Route, Link, useParams, useNavigate } from 'react-router-dom'
 
-// --- 1. หน้าสมัครสมาชิก (เพิ่มกลับมาแล้ว) ---
+// ดึง API URL จาก Environment Variable
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+
+// --- 1. หน้าสมัครสมาชิก ---
 function Register() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -11,7 +14,7 @@ function Register() {
   const handleRegister = async (e) => {
     e.preventDefault()
     try {
-      await axios.post('http://localhost:5000/api/register', { username, password })
+      await axios.post(`${API_URL}/api/register`, { username, password })
       alert('สมัครสมาชิกสำเร็จ!')
       navigate('/login')
     } catch (err) {
@@ -41,11 +44,13 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault()
     try {
-      const res = await axios.post('http://localhost:5000/api/login', { username, password })
+      const res = await axios.post(`${API_URL}/api/login`, { username, password })
       localStorage.setItem('token', res.data.token)
       localStorage.setItem('role', res.data.role)
       navigate('/')
-    } catch (err) { alert('Login Failed!') }
+    } catch (err) { 
+      alert(err.response?.data?.message || 'Login Failed!') 
+    }
   }
 
   return (
@@ -68,7 +73,7 @@ function PostDetail() {
   const { id } = useParams()
   const [post, setPost] = useState(null)
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/posts`).then(res => {
+    axios.get(`${API_URL}/api/posts`).then(res => {
       setPost(res.data.find(p => p._id === id))
     })
   }, [id])
@@ -90,14 +95,15 @@ function Home() {
   const token = localStorage.getItem('token')
   const role = localStorage.getItem('role')
 
-  const fetchPosts = () => axios.get('http://localhost:5000/api/posts').then(res => setPosts(res.data))
+  const fetchPosts = () => axios.get(`${API_URL}/api/posts`).then(res => setPosts(res.data))
   useEffect(() => { fetchPosts() }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    // หาก Backend ต้องการ 'Bearer ' ให้แก้เป็น: `Bearer ${token}`
     const config = { headers: { Authorization: token } }
     try {
-      await axios.post('http://localhost:5000/api/posts', { title, content }, config)
+      await axios.post(`${API_URL}/api/posts`, { title, content }, config)
       setTitle(''); setContent(''); fetchPosts()
     } catch (err) { alert('Unauthorized') }
   }
@@ -133,7 +139,7 @@ function Home() {
             <div className="mt-8 text-[9px] uppercase tracking-[0.25em] text-gray-300 flex justify-between items-center">
               <span>{new Date(post.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
               {role === 'admin' && (
-                <button onClick={async () => { if(window.confirm('Delete?')) { await axios.delete(`http://localhost:5000/api/posts/${post._id}`, { headers: { Authorization: token } }); fetchPosts(); } }} className="hover:text-red-400 transition">Remove</button>
+                <button onClick={async () => { if(window.confirm('Delete?')) { await axios.delete(`${API_URL}/api/posts/${post._id}`, { headers: { Authorization: token } }); fetchPosts(); } }} className="hover:text-red-400 transition">Remove</button>
               )}
             </div>
           </div>

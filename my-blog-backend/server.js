@@ -37,3 +37,5 @@ app.use('/api', authRoutes);
 app.use('/api/posts', postRoutes);
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+module.exports = app;

@@ -8,13 +8,14 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 // --- 1. หน้าสมัครสมาชิก ---
 function Register() {
   const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
 
   const handleRegister = async (e) => {
     e.preventDefault()
     try {
-      await axios.post(`${API_URL}/api/register`, { username, password })
+      await axios.post(`${API_URL}/api/register`, { username, email, password })
       alert('สมัครสมาชิกสำเร็จ!')
       navigate('/login')
     } catch (err) {
@@ -27,7 +28,8 @@ function Register() {
       <h2 className="text-xl font-light mb-8 tracking-[0.3em] text-center">CREATE ACCOUNT</h2>
       <form onSubmit={handleRegister} className="flex flex-col gap-6">
         <input className="border-b border-gray-200 p-2 outline-none focus:border-black transition" placeholder="Username" onChange={e => setUsername(e.target.value)} required />
-        <input className="border-b border-gray-200 p-2 outline-none focus:border-black transition" type="password" placeholder="Password" onChange={e => setPassword(e.target.value)} required />
+        <input className="border-b border-gray-200 p-2 outline-none focus:border-black transition" type="email" placeholder="Email" onChange={e => setEmail(e.target.value)} required />
+        <input className="border-b border-gray-200 p-2 outline-none focus:border-black transition" type="password" placeholder="Password (min 8 characters)" minLength={8} onChange={e => setPassword(e.target.value)} required />
         <button className="bg-black text-white p-3 text-xs tracking-widest uppercase hover:bg-gray-800 transition">Register</button>
         <Link to="/login" className="text-[10px] text-center text-gray-400 uppercase tracking-widest hover:text-black">Back to Login</Link>
       </form>
@@ -37,14 +39,14 @@ function Register() {
 
 // --- 2. หน้า Login ---
 function Login() {
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
 
   const handleLogin = async (e) => {
     e.preventDefault()
     try {
-      const res = await axios.post(`${API_URL}/api/login`, { username, password })
+      const res = await axios.post(`${API_URL}/api/login`, { email, password })
       localStorage.setItem('token', res.data.token)
       localStorage.setItem('role', res.data.role)
       navigate('/')
@@ -57,7 +59,7 @@ function Login() {
     <div className="max-w-xs mx-auto py-32 px-4">
       <h2 className="text-xl font-light mb-8 tracking-[0.3em] text-center">ACCESS</h2>
       <form onSubmit={handleLogin} className="flex flex-col gap-6">
-        <input className="border-b border-gray-200 p-2 outline-none focus:border-black transition" placeholder="Username" onChange={e => setUsername(e.target.value)} required />
+        <input className="border-b border-gray-200 p-2 outline-none focus:border-black transition" type="email" placeholder="Email" onChange={e => setEmail(e.target.value)} required />
         <input className="border-b border-gray-200 p-2 outline-none focus:border-black transition" type="password" placeholder="Password" onChange={e => setPassword(e.target.value)} required />
         <button className="bg-black text-white p-3 text-xs tracking-widest uppercase hover:bg-gray-800 transition">Login</button>
         <div className="flex flex-col gap-2">

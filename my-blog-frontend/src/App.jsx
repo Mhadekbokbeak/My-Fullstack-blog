@@ -5,19 +5,33 @@ import { BrowserRouter as Router, Routes, Route, Link, useParams, useNavigate } 
 // ดึง API URL จาก Environment Variable
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
+// --- Pop-up แจ้งผลสำเร็จ ---
+function SuccessModal({ title, message, buttonText, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={onClose}>
+      <div role="dialog" aria-modal="true" className="w-full max-w-xs bg-white p-10 text-center shadow-xl" onClick={e => e.stopPropagation()}>
+        <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-full border border-black text-xl">✓</div>
+        <h3 className="text-sm font-light tracking-[0.3em] uppercase mb-3">{title}</h3>
+        <p className="text-xs text-gray-400 mb-8">{message}</p>
+        <button autoFocus onClick={onClose} className="w-full bg-black text-white p-3 text-xs tracking-widest uppercase hover:bg-gray-800 transition">{buttonText}</button>
+      </div>
+    </div>
+  )
+}
+
 // --- 1. หน้าสมัครสมาชิก ---
 function Register() {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [success, setSuccess] = useState(false)
   const navigate = useNavigate()
 
   const handleRegister = async (e) => {
     e.preventDefault()
     try {
       await axios.post(`${API_URL}/api/register`, { username, email, password })
-      alert('สมัครสมาชิกสำเร็จ!')
-      navigate('/login')
+      setSuccess(true)
     } catch (err) {
       alert(err.response?.data?.message || 'สมัครไม่สำเร็จ')
     }
@@ -25,6 +39,14 @@ function Register() {
 
   return (
     <div className="max-w-xs mx-auto py-32 px-4">
+      {success && (
+        <SuccessModal
+          title="Welcome"
+          message={`สมัครสมาชิกสำเร็จ! ${username} เข้าสู่ระบบด้วย ${email} ได้เลย`}
+          buttonText="Go to Login"
+          onClose={() => navigate('/login')}
+        />
+      )}
       <h2 className="text-xl font-light mb-8 tracking-[0.3em] text-center">CREATE ACCOUNT</h2>
       <form onSubmit={handleRegister} className="flex flex-col gap-6">
         <input className="border-b border-gray-200 p-2 outline-none focus:border-black transition" placeholder="Username" onChange={e => setUsername(e.target.value)} required />
@@ -41,6 +63,7 @@ function Register() {
 function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [loggedInName, setLoggedInName] = useState(null)
   const navigate = useNavigate()
 
   const handleLogin = async (e) => {
@@ -49,14 +72,22 @@ function Login() {
       const res = await axios.post(`${API_URL}/api/login`, { email, password })
       localStorage.setItem('token', res.data.token)
       localStorage.setItem('role', res.data.role)
-      navigate('/')
-    } catch (err) { 
-      alert(err.response?.data?.message || 'Login Failed!') 
+      setLoggedInName(res.data.username)
+    } catch (err) {
+      alert(err.response?.data?.message || 'Login Failed!')
     }
   }
 
   return (
     <div className="max-w-xs mx-auto py-32 px-4">
+      {loggedInName && (
+        <SuccessModal
+          title="Signed In"
+          message={`ยินดีต้อนรับกลับมา, ${loggedInName}`}
+          buttonText="Continue"
+          onClose={() => navigate('/')}
+        />
+      )}
       <h2 className="text-xl font-light mb-8 tracking-[0.3em] text-center">ACCESS</h2>
       <form onSubmit={handleLogin} className="flex flex-col gap-6">
         <input className="border-b border-gray-200 p-2 outline-none focus:border-black transition" type="email" placeholder="Email" onChange={e => setEmail(e.target.value)} required />
